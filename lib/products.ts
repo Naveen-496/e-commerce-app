@@ -172,6 +172,7 @@ export const products: Product[] = [
 ]
 
 export function getProductById(id: string) {
+  console.log("Got product request: " + id);
   return products.find(p => p.id === id)
 }
 

@@ -1,50 +1,57 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { notFound } from 'next/navigation'
-import ProductGallery from '@/components/ProductGallery'
-import ProductCard from '@/components/ProductCard'
-import { Button } from '@/components/ui/button'
-import { getProductById, products } from '@/lib/products'
-import { useCart, useRecentlyViewed } from '@/lib/store'
-import { Star, Heart, Share2 } from 'lucide-react'
-import Link from 'next/link'
+import { use } from "react";
+import { useState } from "react";
+import { notFound } from "next/navigation";
+import ProductGallery from "@/components/ProductGallery";
+import ProductCard from "@/components/ProductCard";
+import { Button } from "@/components/ui/button";
+import { getProductById, products } from "@/lib/products";
+import { useCart, useRecentlyViewed } from "@/lib/store";
+import { Star, Heart, Share2 } from "lucide-react";
+import Link from "next/link";
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const product = getProductById(params.id)
-  const { addItem } = useCart()
-  const { add } = useRecentlyViewed()
+export default function ProductDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  console.log("Got product request: " + id);
+  const product = getProductById(id);
+  const { addItem } = useCart();
+  const { add } = useRecentlyViewed();
 
-  const [quantity, setQuantity] = useState(1)
-  const [selectedSize, setSelectedSize] = useState(product?.sizes[0])
-  const [selectedColor, setSelectedColor] = useState(product?.colors[0])
-  const [isAdded, setIsAdded] = useState(false)
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState(product?.sizes[0]);
+  const [selectedColor, setSelectedColor] = useState(product?.colors[0]);
+  const [isAdded, setIsAdded] = useState(false);
 
   if (!product) {
-    notFound()
+    notFound();
   }
 
   // Track viewing
-  add(product)
+  add(product);
 
   // Get related products
   const relatedProducts = products
-    .filter(p => p.category === product.category && p.id !== product.id)
-    .slice(0, 4)
+    .filter((p) => p.category === product.category && p.id !== product.id)
+    .slice(0, 4);
 
   const handleAddToCart = () => {
     if (selectedSize && selectedColor) {
-      addItem(product, quantity, selectedSize, selectedColor)
-      setIsAdded(true)
-      setTimeout(() => setIsAdded(false), 2000)
+      addItem(product, quantity, selectedSize, selectedColor);
+      setIsAdded(true);
+      setTimeout(() => setIsAdded(false), 2000);
     }
-  }
+  };
 
-  const price = product.salePrice || product.price
-  const originalPrice = product.salePrice ? product.price : null
+  const price = product.salePrice || product.price;
+  const originalPrice = product.salePrice ? product.price : null;
   const discountPercent = originalPrice
     ? Math.round((1 - product.salePrice! / originalPrice) * 100)
-    : 0
+    : 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,7 +62,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             Products
           </Link>
           <span>/</span>
-          <Link href={`/products?category=${product.category}`} className="hover:text-foreground">
+          <Link
+            href={`/products?category=${product.category}`}
+            className="hover:text-foreground"
+          >
             {product.category}
           </Link>
           <span>/</span>
@@ -77,17 +87,19 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               </h1>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  {Array(5).fill(0).map((_, i) => (
-                    <Star
-                      key={i}
-                      size={16}
-                      className={`${
-                        i < Math.floor(product.rating)
-                          ? 'fill-accent text-accent'
-                          : 'text-muted'
-                      }`}
-                    />
-                  ))}
+                  {Array(5)
+                    .fill(0)
+                    .map((_, i) => (
+                      <Star
+                        key={i}
+                        size={16}
+                        className={`${
+                          i < Math.floor(product.rating)
+                            ? "fill-accent text-accent"
+                            : "text-muted"
+                        }`}
+                      />
+                    ))}
                 </div>
                 <span className="text-sm text-muted-foreground">
                   {product.rating} • {product.reviews} reviews
@@ -121,35 +133,38 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
             {/* Stock Status */}
             <div>
-              <span className={`text-sm font-semibold ${
-                product.stock > 10
-                  ? 'text-green-600'
-                  : product.stock > 0
-                  ? 'text-yellow-600'
-                  : 'text-red-600'
-              }`}>
+              <span
+                className={`text-sm font-semibold ${
+                  product.stock > 10
+                    ? "text-green-600"
+                    : product.stock > 0
+                      ? "text-yellow-600"
+                      : "text-red-600"
+                }`}
+              >
                 {product.stock > 10
-                  ? 'In Stock'
+                  ? "In Stock"
                   : product.stock > 0
-                  ? `Only ${product.stock} left`
-                  : 'Out of Stock'}
+                    ? `Only ${product.stock} left`
+                    : "Out of Stock"}
               </span>
             </div>
 
             {/* Colors */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-3">
-                Color: <span className="font-normal">{selectedColor?.name}</span>
+                Color:{" "}
+                <span className="font-normal">{selectedColor?.name}</span>
               </label>
               <div className="flex gap-3 flex-wrap">
-                {product.colors.map(color => (
+                {product.colors.map((color) => (
                   <button
                     key={color.name}
                     onClick={() => setSelectedColor(color)}
                     className={`w-10 h-10 rounded-full border-2 transition-all ${
                       selectedColor?.name === color.name
-                        ? 'border-foreground ring-2 ring-offset-2 ring-accent'
-                        : 'border-border hover:border-muted-foreground'
+                        ? "border-foreground ring-2 ring-offset-2 ring-accent"
+                        : "border-border hover:border-muted-foreground"
                     }`}
                     style={{ backgroundColor: color.hex }}
                     title={color.name}
@@ -164,14 +179,14 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 Size: <span className="font-normal">{selectedSize}</span>
               </label>
               <div className="grid grid-cols-4 gap-2">
-                {product.sizes.map(size => (
+                {product.sizes.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
                     className={`py-2 px-3 text-sm font-semibold rounded-sm border-2 transition-all ${
                       selectedSize === size
-                        ? 'border-foreground bg-foreground text-background'
-                        : 'border-border hover:border-muted-foreground'
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border hover:border-muted-foreground"
                     }`}
                   >
                     {size}
@@ -192,7 +207,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 >
                   −
                 </button>
-                <span className="w-8 text-center font-semibold">{quantity}</span>
+                <span className="w-8 text-center font-semibold">
+                  {quantity}
+                </span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="w-10 h-10 border border-border rounded-sm hover:bg-muted transition-colors"
@@ -208,7 +225,11 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               disabled={product.stock === 0}
               className="w-full py-6 bg-accent hover:bg-accent/90 text-accent-foreground text-lg font-semibold"
             >
-              {isAdded ? '✓ Added to Cart' : product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+              {isAdded
+                ? "✓ Added to Cart"
+                : product.stock === 0
+                  ? "Out of Stock"
+                  : "Add to Cart"}
             </Button>
 
             {/* Wishlist and Share */}
@@ -228,9 +249,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               <p className="text-foreground">
                 ✓ Free shipping on orders over $100
               </p>
-              <p className="text-foreground">
-                ✓ 30-day returns guarantee
-              </p>
+              <p className="text-foreground">✓ 30-day returns guarantee</p>
               <p className="text-foreground">
                 ✓ 100% authentic, premium quality
               </p>
@@ -245,7 +264,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               Related Products
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {relatedProducts.map(p => (
+              {relatedProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>
@@ -253,5 +272,5 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         )}
       </div>
     </div>
-  )
+  );
 }
